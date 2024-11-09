@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
-import LandingPage from './landingpage';
+import LandingPage from './pages/landingpage';
 import Login from './pages/login';
 import Register from './pages/register';
 import Navbar from '../component/navbar';

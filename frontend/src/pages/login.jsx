@@ -74,7 +74,7 @@ function Login() {
           <Link to="/support">Contact support</Link>
         </div>
       </div>
-      <Link to="/signup" className="signup-link">Sign up</Link>
+      <Link to="/admin/auth/register" className="signup-link">Sign up</Link>
     </div>
   );
 }

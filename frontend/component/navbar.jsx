@@ -19,7 +19,7 @@ function Navbar() {
         const response = await fetch('http://localhost:5005/admin/auth/logout', {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: token,
             'Content-Type': 'application/json',
           },
         });

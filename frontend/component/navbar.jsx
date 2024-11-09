@@ -9,21 +9,32 @@ function Navbar() {
 
   useEffect(() => {
     const checkAuthStatus = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setIsLoggedIn(false);
+        return;
+      }
+
       try {
-        const response = await fetch('http://localhost:5005/auth/status', {
+        const response = await fetch('http://localhost:5005/admin/auth/logout', {
+          method: 'POST',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`, // 假设你在本地存储了 token
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
         });
-        const data = await response.json();
-        if (data.isLoggedIn) {
+
+        if (response.ok) {
           setIsLoggedIn(true);
-          setUsername(data.email);
+          setUsername("User"); 
         } else {
           setIsLoggedIn(false);
+          localStorage.removeItem('token'); 
         }
       } catch (error) {
-        console.error('Error fetching auth status:', error);
+        console.error('Error checking auth status:', error);
+        setIsLoggedIn(false);
+        localStorage.removeItem('token'); 
       }
     };
 

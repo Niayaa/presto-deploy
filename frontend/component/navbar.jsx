@@ -1,11 +1,34 @@
-import React, { useState }  from 'react';
+import React, { useState, useEffect }  from 'react';
 import { Link } from 'react-router-dom';
 import './navbar.css';
 
 
 function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState("User");
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const response = await fetch('/auth/status', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`, // 假设你在本地存储了 token
+          },
+        });
+        const data = await response.json();
+        if (data.isLoggedIn) {
+          setIsLoggedIn(true);
+          setUsername(data.email);
+        } else {
+          setIsLoggedIn(false);
+        }
+      } catch (error) {
+        console.error('Error fetching auth status:', error);
+      }
+    };
+
+    checkAuthStatus();
+  }, []);
   return (
     <nav className="navbar">
       <div className="navbar-logo">

@@ -69,7 +69,7 @@ function Register() {
         </form>
         <div className="footer-links">
           <p>Already have an account?</p>
-          <Link to="/admin/auth/login" className="login-link">Log in</Link>
+          <Link to="/login" className="login-link">Log in</Link>
         </div>
       </div>
     </div>

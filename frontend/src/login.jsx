@@ -1,55 +1,59 @@
 // src/pages/Login.jsx
 import React, { useState } from 'react';
-import ErrorMessage from './errorMessage';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import './Login.css';
+import Navbar from '../component/navbar';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    
-    // Mock login validation
-    if (email === 'user@example.com' && password === 'password') {
-      navigate('/dashboard'); 
-    } else {
-      setError('Invalid email or password.');
-    }
+    // Placeholder for login submission logic
+    console.log({ email, password, rememberMe });
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      {error && <ErrorMessage message={error} />}
-      <form onSubmit={handleSubmit}>
-        <label>
-          Email:
+    <div className="login-container">
+      <div className="login-card">
+        <h1>Welcome back!</h1>
+        <p>Let's get you signed in</p>
+        <div className="divider">OR</div>
+        <form onSubmit={handleSubmit}>
           <input
             type="email"
+            placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-        </label>
-        <br />
-        <label>
-          Password:
           <input
             type="password"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-        </label>
-        <br />
-        <button type="submit">Login</button>
-      </form>
+          <div className="remember-me">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={() => setRememberMe(!rememberMe)}
+            />
+            <label>Remember me</label>
+          </div>
+          <button type="submit" className="login-button">Log in</button>
+        </form>
+        <div className="footer-links">
+          <Link to="/forgot-password">Forgot your password?</Link>
+          <Link to="/support">Contact support</Link>
+        </div>
+      </div>
+      <Link to="/signup" className="signup-link">Sign up</Link>
     </div>
   );
 }
 
 export default Login;
-

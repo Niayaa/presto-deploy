@@ -10,7 +10,7 @@ function Navbar() {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await fetch('/auth/status', {
+        const response = await fetch('http://localhost:5005/auth/status', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`, // 假设你在本地存储了 token
           },

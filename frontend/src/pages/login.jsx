@@ -31,6 +31,13 @@ function Login() {
       } else {
         sessionStorage.setItem('token', token);
       }
+      if (data.token) {
+
+        localStorage.setItem('token', data.token);
+        return true;
+      } else {
+        console.error('No token received');
+      }
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);

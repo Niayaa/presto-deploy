@@ -10,6 +10,7 @@ function Navbar() {
   useEffect(() => {
     const checkAuthStatus = async () => {
       const token = localStorage.getItem('token');
+      console.log('token',token);
       if (!token) {
         setIsLoggedIn(false);
         return;

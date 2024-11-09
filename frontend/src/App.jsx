@@ -6,6 +6,7 @@ import Login from './pages/login';
 import Register from './pages/register';
 import Navbar from '../component/navbar';
 import Dashboard from './pages/dashboard';
+import PresentationView from './pages/presentation/presentationView';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 function App() {
   const [count, setCount] = useState(0);
@@ -19,6 +20,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />}/>
           <Route path="/dashboard" element={<Dashboard />}/>
+          <Route path="/presentation/:id" element={<PresentationView />} />
         </Routes>
       </Router>
     </>

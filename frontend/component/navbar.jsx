@@ -16,7 +16,7 @@ function Navbar() {
       <div className="navbar-buttons">
       {isLoggedIn ? (
           <>
-            <Link to="/Dashboard" className="new-presentation-button">New Presentation</Link>
+            <Link to="/dashboard" className="new-presentation-button">New Presentation</Link>
             <span className="username">{username}</span>
           </>
         ) : (

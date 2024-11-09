@@ -1,18 +1,40 @@
-// src/pages/Login.jsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import './login.css';
-import Navbar from '../component/navbar';
 
 function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Placeholder for login submission logic
-    console.log({ email, password, rememberMe });
+    setError(null);
+
+    try {
+      const response = await fetch('/admin/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!response.ok) {
+        throw new Error('Login failed. Please check your credentials.');
+      }
+      const data = await response.json();
+      const { token } = data;
+      if (rememberMe) {
+        localStorage.setItem('token', token);
+      } else {
+        sessionStorage.setItem('token', token);
+      }
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   return (
@@ -44,6 +66,7 @@ function Login() {
             />
             <label>Remember me</label>
           </div>
+          {error && <p className="error-message">{error}</p>}
           <button type="submit" className="login-button">Log in</button>
         </form>
         <div className="footer-links">

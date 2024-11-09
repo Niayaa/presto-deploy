@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
-import LandingPage from './landingpage';
-import Login from './login';
+import LandingPage from './pages/landingpage';
+import Login from './pages/login';
+import Register from './pages/register';
 import Navbar from '../component/navbar';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />}/>
         </Routes>
       </Router>
     </>

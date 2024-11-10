@@ -32,12 +32,13 @@ function Login() {
         sessionStorage.setItem('token', token);
       }
       if (data.token) {
-
         localStorage.setItem('token', data.token);
+        console.log('token recevied',data.token)
         return true;
       } else {
         console.error('No token received');
       }
+      return false;
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);

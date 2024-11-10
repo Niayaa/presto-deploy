@@ -9,16 +9,26 @@ function Navbar() {
 
   return (
     <nav className="navbar">
-      <Link to="/">Home</Link>
+      <ul className="navbar-logo">
+        <Link to="/">
+            <img src="./image/logo.png" alt="logo" className="logo" />
+          </Link>
+      </ul>
       {isLoggedIn ? (
         <>
+          <ul className="navbar-links">
           <Link to="/dashboard">Dashboard</Link>
-          <button onClick={logout}>Logout</button>
+          </ul>
+          <div className="navbar-buttons">      
+            <button onClick={logout}>Logout</button>
+          </div>    
         </>
       ) : (
           <>
+            <div className="navbar-buttons">
             <Link to="/login" className="login-link">Log in</Link>
             <Link to="/register" className="signup-button">Sign up</Link>
+            </div>
           </>
         )}
     </nav>

@@ -8,11 +8,13 @@ import Navbar from '../component/navbar';
 import Dashboard from './pages/dashboard';
 import PresentationView from './pages/presentation/presentationView';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './AuthContext';
 function App() {
   const [count, setCount] = useState(0);
   
   return (
     <>
+    <AuthProvider>
       <Router>
         <Navbar />
         <Routes>
@@ -23,6 +25,7 @@ function App() {
           <Route path="/presentation/:id" element={<PresentationView />} />
         </Routes>
       </Router>
+    </AuthProvider>
     </>
   )
 }

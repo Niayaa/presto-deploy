@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../component/authcontext';
 import './login.css';
 
 function Login() {
@@ -8,6 +9,7 @@ function Login() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,13 +34,8 @@ function Login() {
         sessionStorage.setItem('token', token);
       }
       if (data.token) {
-        localStorage.setItem('token', data.token);
-        console.log('token recevied',data.token)
-        return true;
-      } else {
-        console.error('No token received');
-      }
-      return false;
+      login(data.token);
+      }  
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);

@@ -8,7 +8,7 @@ import Navbar from '../component/navbar';
 import Dashboard from './pages/dashboard';
 import PresentationView from './pages/presentation/presentationView';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './AuthContext';
+import { AuthProvider } from '../component/authcontext';
 function App() {
   const [count, setCount] = useState(0);
   

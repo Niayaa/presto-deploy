@@ -64,6 +64,13 @@ function Register() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          <input
+            type="password"
+            placeholder="Comfirm Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
           {error && <p className="error-message">{error}</p>}
           <button type="submit" className="register-button">Sign Up</button>
         </form>

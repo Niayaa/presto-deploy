@@ -63,10 +63,16 @@
   .footer-links p {
     color: #777;
   }
-  
+
   .footer-links .login-link {
     color: #333;
     text-decoration: none;
     font-weight: bold;
     margin-left: 0.5rem;
+    margin-top: 0.9rem;
+  }
+
+  .footer-links .login-link:hover {
+    color: #000;
+    text-decoration: underline;
   }

@@ -5,8 +5,8 @@ import LandingPage from './pages/landingpage';
 import Login from './pages/login';
 import Register from './pages/register';
 import Navbar from '../component/navbar';
-import Dashboard from './pages/dashboard';
-import PresentationView from './pages/presentation/presentationView';
+import Dashboard from './pages/presentation/dashboard';
+import EditorPage from './pages/presentation/editorpage';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '../component/authcontext';
 function App() {
@@ -22,7 +22,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />}/>
           <Route path="/dashboard" element={<Dashboard />}/>
-          <Route path="/presentation/:id" element={<PresentationView />} />
+          <Route path="/editor/:presentationId" element={<EditorPage />} />
         </Routes>
       </Router>
     </AuthProvider>

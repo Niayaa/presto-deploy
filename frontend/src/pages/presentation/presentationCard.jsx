@@ -1,26 +1,20 @@
 import React from 'react';
+import './dashboard.css';
 import { useNavigate } from 'react-router-dom';
 
-function PresentationCard({ presentation, onDelete }) {
+const PresentationCard = ({ presentation }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="presentation-card" style={{ width: '200px', height: '100px' }}>
-      <div onClick={() => navigate(`/presentation/${presentation.id}`)}>
-        <h3>{presentation.title}</h3>
-        <div className="thumbnail">
-          {presentation.thumbnail ? (
-            <img src={presentation.thumbnail} alt="thumbnail" />
-          ) : (
-            <div className="empty-thumbnail">[Empty]</div>
-          )}
-        </div>
-        <p>{presentation.description || 'No description'}</p>
-        <p>{presentation.slides.length} slides</p>
+    <div className="presentation-card" onClick={() => navigate(`/editor/${presentation.id}`)}>
+      <div className="thumbnail">
+        {presentation.thumbnail || <div className="placeholder">No Thumbnail</div>}
       </div>
-      <button onClick={onDelete}>Delete</button>
+      <h3>{presentation.name || 'Untitled'}</h3>
+      <p>{presentation.description || ''}</p>
+      <p>Slides: {presentation.slides.length}</p>
     </div>
   );
-}
+};
 
 export default PresentationCard;

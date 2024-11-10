@@ -47,7 +47,6 @@ function Login() {
       <div className="login-card">
         <h1>Welcome back!</h1>
         <p>Let's get you signed in</p>
-        <div className="divider">OR</div>
         <form onSubmit={handleSubmit}>
           <input
             type="email"

@@ -50,6 +50,7 @@
 .modal-content textarea {
   resize: vertical;
   height: 60px;
+  border-color: lightgrey;
 }
 
 .modal-content input[type="color"] {

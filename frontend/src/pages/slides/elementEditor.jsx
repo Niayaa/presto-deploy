@@ -62,14 +62,18 @@ const ElementEditor = ({ elements, setElements }) => {
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       {elements.map(el => (
         <div
-          key={el.id}
-          style={{
-            position: 'absolute',
-            top: `${el.y}%`,
-            left: `${el.x}%`,
-            width: `${el.width}%`,
-            height: `${el.height}%`,
-            cursor: 'pointer'
+        key={el.id}
+        style={{
+          position: 'absolute',
+          top: `${el.y}%`,
+          left: `${el.x}%`,
+          width: `${el.width}%`,
+          height: `${el.height}%`,
+          cursor: 'pointer',
+          border: el.type === 'text' ? '1px solid #ccc' : 'none',
+          fontSize: el.type === 'text' ? `${el.fontSize}em` : 'inherit',
+          color: el.type === 'text' ? el.color : 'inherit',
+          overflow: 'hidden'
           }}
           onDoubleClick={() => {
             if (el.type === 'text') openTextModal(el);

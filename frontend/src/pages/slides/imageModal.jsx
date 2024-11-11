@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './imageModal.css';
 
 const ImageModal = ({ onSave, onClose, initialData }) => {
   const [url, setUrl] = useState(initialData?.src || '');

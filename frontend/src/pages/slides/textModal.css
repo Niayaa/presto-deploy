@@ -60,6 +60,7 @@
 
 .modal-content .button-group {
   display: flex;
+  gap: 15px;
   gap: 10px;
 }
 

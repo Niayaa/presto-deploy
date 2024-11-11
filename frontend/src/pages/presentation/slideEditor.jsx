@@ -4,12 +4,14 @@ import Sidebar from '../slides/sidebar';
 import Slide from '../slides/slide';
 import TextModal from '../slides/textModal';
 import ImageModal from '../slides/imageModal';
+import VideoModal from '../slides/videoModal';
 
 const SlideEditor = () => {
   const [slides, setSlides] = useState([{ id: Date.now(), elements: [] }]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isTextModalOpen, setIsTextModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [editingElement, setEditingElement] = useState(null);
 
   const handleNewSlide = () => {
@@ -35,6 +37,11 @@ const SlideEditor = () => {
   const addImageElement = () => {
     setEditingElement(null);
     setIsImageModalOpen(true);
+  };
+
+  const addVideoElement = () => {
+    setEditingElement(null);
+    setIsVideoModalOpen(true);
   };
 
   const handleSaveText = (data) => {
@@ -67,11 +74,25 @@ const SlideEditor = () => {
     setEditingElement(null);
   };
 
+  const handleSaveVideo = (data) => {
+    const newSlides = [...slides];
+    const newElement = editingElement ? 
+      { ...editingElement, ...data } : 
+      { id: Date.now(), type: 'video', ...data };
+    newSlides[currentSlideIndex].elements = editingElement ? 
+      newSlides[currentSlideIndex].elements.map(el => el.id === editingElement.id ? newElement : el) :
+      [...newSlides[currentSlideIndex].elements, newElement];
+    setSlides(newSlides);
+    setIsVideoModalOpen(false);
+    setEditingElement(null);
+  };
+
   return (
     <div className="slide-editor">
       <Sidebar 
         onAddText={addTextElement} 
         onAddImage={addImageElement} 
+        onAddVideo={addVideoElement} 
       />
       <button onClick={handleNewSlide}>New Slide</button>
       <button onClick={handleDeleteSlide}>Delete Slide</button>
@@ -99,7 +120,6 @@ const SlideEditor = () => {
         }}
       />
 
-      {/* Text Modal */}
       {isTextModalOpen && (
         <TextModal
           initialData={editingElement}
@@ -108,12 +128,19 @@ const SlideEditor = () => {
         />
       )}
 
-      {/* Image Modal */}
       {isImageModalOpen && (
         <ImageModal
           initialData={editingElement}
           onSave={handleSaveImage}
           onClose={() => setIsImageModalOpen(false)}
+        />
+      )}
+
+      {isVideoModalOpen && (
+        <VideoModal
+          initialData={editingElement}
+          onSave={handleSaveVideo}
+          onClose={() => setIsVideoModalOpen(false)}
         />
       )}
     </div>

@@ -2,10 +2,15 @@ import './dashboard.css';
 import React, { useState } from 'react';
 import Sidebar from '../slides/sidebar';
 import Slide from '../slides/slide';
+import TextModal from '../slides/textModal';
+import ImageModal from '../slides/imageModal';
 
 const SlideEditor = () => {
   const [slides, setSlides] = useState([{ id: Date.now(), elements: [] }]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const [isTextModalOpen, setIsTextModalOpen] = useState(false);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [editingElement, setEditingElement] = useState(null);
 
   const handleNewSlide = () => {
     setSlides([...slides, { id: Date.now(), elements: [] }]);
@@ -23,29 +28,51 @@ const SlideEditor = () => {
   };
 
   const addTextElement = () => {
-    const newElement = {
-      id: Date.now(),
-      type: 'text',
-      text: 'New Text',
-      width: 30,
-      height: 10,
-      fontSize: 1,
-      color: '#000000',
-      x: 0,
-      y: 0,
-    };
+    setEditingElement(null);
+    setIsTextModalOpen(true);
+  };
 
+  const addImageElement = () => {
+    setEditingElement(null);
+    setIsImageModalOpen(true);
+  };
+
+  const handleSaveText = (data) => {
     const newSlides = [...slides];
-    newSlides[currentSlideIndex].elements = [
-      ...newSlides[currentSlideIndex].elements,
-      newElement,
-    ];
+    if (editingElement) {
+      newSlides[currentSlideIndex].elements = newSlides[currentSlideIndex].elements.map(el =>
+        el.id === editingElement.id ? { ...el, ...data } : el
+      );
+    } else {
+      const newElement = { id: Date.now(), type: 'text', ...data };
+      newSlides[currentSlideIndex].elements.push(newElement);
+    }
     setSlides(newSlides);
+    setIsTextModalOpen(false);
+    setEditingElement(null);
+  };
+
+  const handleSaveImage = (data) => {
+    const newSlides = [...slides];
+    if (editingElement) {
+      newSlides[currentSlideIndex].elements = newSlides[currentSlideIndex].elements.map(el =>
+        el.id === editingElement.id ? { ...el, ...data } : el
+      );
+    } else {
+      const newElement = { id: Date.now(), type: 'image', ...data };
+      newSlides[currentSlideIndex].elements.push(newElement);
+    }
+    setSlides(newSlides);
+    setIsImageModalOpen(false);
+    setEditingElement(null);
   };
 
   return (
     <div className="slide-editor">
-      <Sidebar onAddText={addTextElement} />
+      <Sidebar 
+        onAddText={addTextElement} 
+        onAddImage={addImageElement} 
+      />
       <button onClick={handleNewSlide}>New Slide</button>
       <button onClick={handleDeleteSlide}>Delete Slide</button>
       <div className="slide-controls">
@@ -71,6 +98,24 @@ const SlideEditor = () => {
           setSlides(newSlides);
         }}
       />
+
+      {/* Text Modal */}
+      {isTextModalOpen && (
+        <TextModal
+          initialData={editingElement}
+          onSave={handleSaveText}
+          onClose={() => setIsTextModalOpen(false)}
+        />
+      )}
+
+      {/* Image Modal */}
+      {isImageModalOpen && (
+        <ImageModal
+          initialData={editingElement}
+          onSave={handleSaveImage}
+          onClose={() => setIsImageModalOpen(false)}
+        />
+      )}
     </div>
   );
 };

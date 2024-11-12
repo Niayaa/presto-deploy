@@ -1,10 +1,11 @@
 import './dashboard.css';
 import React, { useState } from 'react';
-import Sidebar from '../slides/sidebar';
+import Sidebar from '../slides/sideBar';
 import Slide from '../slides/slide';
 import TextModal from '../slides/textModal';
 import ImageModal from '../slides/imageModal';
 import VideoModal from '../slides/videoModal';
+import CodeModal from '../slides/codeModal';
 
 const SlideEditor = () => {
   const [slides, setSlides] = useState([{ id: Date.now(), elements: [] }]);
@@ -12,6 +13,7 @@ const SlideEditor = () => {
   const [isTextModalOpen, setIsTextModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [editingElement, setEditingElement] = useState(null);
 
   const handleNewSlide = () => {
@@ -42,6 +44,11 @@ const SlideEditor = () => {
   const addVideoElement = () => {
     setEditingElement(null);
     setIsVideoModalOpen(true);
+  };
+
+  const addCodeElement = () => {
+    setEditingElement(null);
+    setIsCodeModalOpen(true);
   };
 
   const handleSaveText = (data) => {
@@ -87,12 +94,27 @@ const SlideEditor = () => {
     setEditingElement(null);
   };
 
+  const handleSaveCode = (data) => {
+    const newSlides = [...slides];
+    const newElement = editingElement ? 
+      { ...editingElement, ...data } : 
+      { id: Date.now(), type: 'code', ...data };
+    newSlides[currentSlideIndex].elements = editingElement ? 
+      newSlides[currentSlideIndex].elements.map(el => el.id === editingElement.id ? newElement : el) :
+      [...newSlides[currentSlideIndex].elements, newElement];
+    setSlides(newSlides);
+    setIsCodeModalOpen(false);
+    setEditingElement(null);
+  };
+
+
   return (
     <div className="slide-editor">
       <Sidebar 
         onAddText={addTextElement} 
         onAddImage={addImageElement} 
         onAddVideo={addVideoElement} 
+        onAddCode={addCodeElement}
       />
       <button onClick={handleNewSlide}>New Slide</button>
       <button onClick={handleDeleteSlide}>Delete Slide</button>
@@ -141,6 +163,14 @@ const SlideEditor = () => {
           initialData={editingElement}
           onSave={handleSaveVideo}
           onClose={() => setIsVideoModalOpen(false)}
+        />
+      )}
+
+      {isCodeModalOpen && (
+        <CodeModal
+          initialData={editingElement}
+          onSave={handleSaveCode}
+          onClose={() => setIsCodeModalOpen(false)}
         />
       )}
     </div>

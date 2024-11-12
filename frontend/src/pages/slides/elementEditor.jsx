@@ -1,12 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/default.css';
+
 import TextModal from './textModal';
 import ImageModal from './imageModal';
 import VideoModal from './videoModal';
+import CodeModal from './codeModal';
+
+// Import highlight.js languages
+import javascript from 'highlight.js/lib/languages/javascript';
+import python from 'highlight.js/lib/languages/python';
+import c from 'highlight.js/lib/languages/c';
+
+// Register languages
+hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('python', python);
+hljs.registerLanguage('c', c);
 
 const ElementEditor = ({ elements, setElements }) => {
   const [isTextModalOpen, setIsTextModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [editingElement, setEditingElement] = useState(null);
 
   const openTextModal = (element = null) => {
@@ -24,33 +39,44 @@ const ElementEditor = ({ elements, setElements }) => {
     setIsVideoModalOpen(true);
   };
 
+  const openCodeModal = (element = null) => {
+    setEditingElement(element);
+    setIsCodeModalOpen(true);
+  };
+
   const handleSaveText = (data) => {
-    if (editingElement) {
-      setElements(elements.map(el => el.id === editingElement.id ? { ...el, ...data } : el));
-    } else {
-      setElements([...elements, { ...data, id: Date.now(), type: 'text' }]);
-    }
+    const newElement = editingElement
+      ? elements.map(el => el.id === editingElement.id ? { ...el, ...data } : el)
+      : [...elements, { ...data, id: Date.now(), type: 'text' }];
+    setElements(newElement);
     setIsTextModalOpen(false);
     setEditingElement(null);
   };
 
   const handleSaveImage = (data) => {
-    if (editingElement) {
-      setElements(elements.map(el => el.id === editingElement.id ? { ...el, ...data } : el));
-    } else {
-      setElements([...elements, { ...data, id: Date.now(), type: 'image' }]);
-    }
+    const newElement = editingElement
+      ? elements.map(el => el.id === editingElement.id ? { ...el, ...data } : el)
+      : [...elements, { ...data, id: Date.now(), type: 'image' }];
+    setElements(newElement);
     setIsImageModalOpen(false);
     setEditingElement(null);
   };
 
   const handleSaveVideo = (data) => {
-    if (editingElement) {
-      setElements(elements.map(el => el.id === editingElement.id ? { ...el, ...data } : el));
-    } else {
-      setElements([...elements, { ...data, id: Date.now(), type: 'video' }]);
-    }
+    const newElement = editingElement
+      ? elements.map(el => el.id === editingElement.id ? { ...el, ...data } : el)
+      : [...elements, { ...data, id: Date.now(), type: 'video' }];
+    setElements(newElement);
     setIsVideoModalOpen(false);
+    setEditingElement(null);
+  };
+
+  const handleSaveCode = (data) => {
+    const newElement = editingElement
+      ? elements.map(el => el.id === editingElement.id ? { ...el, ...data } : el)
+      : [...elements, { ...data, id: Date.now(), type: 'code' }];
+    setElements(newElement);
+    setIsCodeModalOpen(false);
     setEditingElement(null);
   };
 
@@ -58,27 +84,41 @@ const ElementEditor = ({ elements, setElements }) => {
     setElements(elements.filter(el => el.id !== id));
   };
 
+  // Apply syntax highlighting whenever code elements change
+  useEffect(() => {
+    elements.forEach((el) => {
+      if (el.type === 'code') {
+        const codeBlock = document.getElementById(`code-${el.id}`);
+        if (codeBlock) {
+          // Use auto-detection for syntax highlighting
+          codeBlock.innerHTML = hljs.highlightAuto(el.code).value;
+        }
+      }
+    });
+  }, [elements]);
+
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       {elements.map(el => (
         <div
-        key={el.id}
-        style={{
-          position: 'absolute',
-          top: `${el.y}%`,
-          left: `${el.x}%`,
-          width: `${el.width}%`,
-          height: `${el.height}%`,
-          cursor: 'pointer',
-          border: el.type === 'text' ? '1px solid #ccc' : 'none',
-          fontSize: el.type === 'text' ? `${el.fontSize}em` : 'inherit',
-          color: el.type === 'text' ? el.color : 'inherit',
-          overflow: 'hidden'
+          key={el.id}
+          style={{
+            position: 'absolute',
+            top: `${el.y}%`,
+            left: `${el.x}%`,
+            width: `${el.width}%`,
+            height: `${el.height}%`,
+            cursor: 'pointer',
+            border: el.type === 'text' || el.type === 'code' ? '1px solid #ccc' : 'none',
+            fontSize: el.type === 'text' ? `${el.fontSize}em` : 'inherit',
+            color: el.type === 'text' ? el.color : 'inherit',
+            overflow: 'hidden'
           }}
           onDoubleClick={() => {
             if (el.type === 'text') openTextModal(el);
             else if (el.type === 'image') openImageModal(el);
             else if (el.type === 'video') openVideoModal(el);
+            else if (el.type === 'code') openCodeModal(el);
           }}
           onContextMenu={(e) => {
             e.preventDefault();
@@ -100,9 +140,22 @@ const ElementEditor = ({ elements, setElements }) => {
               />
             </div>
           )}
+          {el.type === 'code' && (
+            <pre style={{
+              fontSize: `${el.fontSize}em`,
+              whiteSpace: 'pre-wrap',
+              border: '1px solid #ddd',
+              padding: '10px',
+              background: '#f5f5f5'
+            }}>
+              <code id={`code-${el.id}`}>
+                {el.code}
+              </code>
+            </pre>
+          )}
         </div>
       ))}
-      
+
       {isTextModalOpen && (
         <TextModal
           initialData={editingElement}
@@ -124,6 +177,14 @@ const ElementEditor = ({ elements, setElements }) => {
           initialData={editingElement}
           onSave={handleSaveVideo}
           onClose={() => setIsVideoModalOpen(false)}
+        />
+      )}
+
+      {isCodeModalOpen && (
+        <CodeModal
+          initialData={editingElement}
+          onSave={handleSaveCode}
+          onClose={() => setIsCodeModalOpen(false)}
         />
       )}
     </div>

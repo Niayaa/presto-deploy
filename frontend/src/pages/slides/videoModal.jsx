@@ -63,10 +63,8 @@ const VideoModal = ({ onSave, onClose, initialData }) => {
           Auto-play
         </label>
 
-        <div className="button-group">
-          <button onClick={handleSave}>Save</button>
-          <button onClick={onClose}>Cancel</button>
-        </div>
+        <button onClick={handleSave}>Save</button>
+        <button onClick={onClose}>Cancel</button>
       </div>
     </div>
   );

@@ -1,0 +1,28 @@
+.slide-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f4f4f9;
+}
+
+.slide {
+  width: 80%;
+  height: 70vh;
+  background-color: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.element {
+  position: absolute;
+  border: 1px solid #ccc;
+  padding: 5px;
+  background-color: #f9f9f9;
+  color: #333;
+  font-family: Arial, sans-serif;
+  font-size: 1em;
+}

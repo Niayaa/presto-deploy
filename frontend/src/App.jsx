@@ -9,22 +9,25 @@ import Dashboard from './pages/presentation/dashboard';
 import EditorPage from './pages/presentation/editorpage';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '../component/authcontext';
+import { PresentationProvider } from './pages/presentation/presentationContext';
 function App() {
   const [count, setCount] = useState(0);
   
   return (
     <>
     <AuthProvider>
-      <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />}/>
-          <Route path="/dashboard" element={<Dashboard />}/>
-          <Route path="/editor/:presentationId" element={<EditorPage />} />
-        </Routes>
-      </Router>
+      <PresentationProvider>
+        <Router>
+          <Navbar />
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />}/>
+            <Route path="/dashboard" element={<Dashboard />}/>
+            <Route path="/editor/:presentationId" element={<EditorPage />} />
+          </Routes>
+        </Router>
+      </PresentationProvider>
     </AuthProvider>
     </>
   )

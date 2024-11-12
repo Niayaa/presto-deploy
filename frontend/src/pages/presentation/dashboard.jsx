@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import NewPresentationModal from './newPresentation';
 import PresentationCard from './presentationCard';
 import './dashboard.css';
 
 const Dashboard = () => {
-  const [presentations, setPresentations] = useState([]);
+  const [presentations, setPresentations] = useState(() => {
+    const savedPresentations = localStorage.getItem('presentations');
+    return savedPresentations ? JSON.parse(savedPresentations) : [];
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  useEffect(() => {
+    localStorage.setItem('presentations', JSON.stringify(presentations));
+  }, [presentations]);
+
 
   const handleCreatePresentation = (name) => {
     const newPresentation = {

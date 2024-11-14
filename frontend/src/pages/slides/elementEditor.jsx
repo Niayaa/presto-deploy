@@ -23,59 +23,32 @@ const ElementEditor = ({ elements, setElements }) => {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [editingElement, setEditingElement] = useState(null);
+  const [selectedElement, setSelectedElement] = useState(null);
+  const [resizingElement, setResizingElement] = useState(null);
+  const [draggingElement, setDraggingElement] = useState(null);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0, offsetX: 0, offsetY: 0 });
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0, corner: '' });
 
-  const openTextModal = (element = null) => {
+  const openModal = (element, type) => {
     setEditingElement(element);
-    setIsTextModalOpen(true);
+    if (type === 'text') setIsTextModalOpen(true);
+    else if (type === 'image') setIsImageModalOpen(true);
+    else if (type === 'video') setIsVideoModalOpen(true);
+    else if (type === 'code') setIsCodeModalOpen(true);
   };
 
-  const openImageModal = (element = null) => {
-    setEditingElement(element);
-    setIsImageModalOpen(true);
+  const handleSave = (data, type) => {
+    const updatedElements = elements.map(el => 
+      el.id === editingElement.id ? { ...el, ...data, type } : el
+    );
+    setElements(updatedElements);
+    closeModal();
   };
 
-  const openVideoModal = (element = null) => {
-    setEditingElement(element);
-    setIsVideoModalOpen(true);
-  };
-
-  const openCodeModal = (element = null) => {
-    setEditingElement(element);
-    setIsCodeModalOpen(true);
-  };
-
-  const handleSaveText = (data) => {
-    const newElement = editingElement
-      ? elements.map(el => el.id === editingElement.id ? { ...el, ...data } : el)
-      : [...elements, { ...data, id: Date.now(), type: 'text' }];
-    setElements(newElement);
+  const closeModal = () => {
     setIsTextModalOpen(false);
-    setEditingElement(null);
-  };
-
-  const handleSaveImage = (data) => {
-    const newElement = editingElement
-      ? elements.map(el => el.id === editingElement.id ? { ...el, ...data } : el)
-      : [...elements, { ...data, id: Date.now(), type: 'image' }];
-    setElements(newElement);
     setIsImageModalOpen(false);
-    setEditingElement(null);
-  };
-
-  const handleSaveVideo = (data) => {
-    const newElement = editingElement
-      ? elements.map(el => el.id === editingElement.id ? { ...el, ...data } : el)
-      : [...elements, { ...data, id: Date.now(), type: 'video' }];
-    setElements(newElement);
     setIsVideoModalOpen(false);
-    setEditingElement(null);
-  };
-
-  const handleSaveCode = (data) => {
-    const newElement = editingElement
-      ? elements.map(el => el.id === editingElement.id ? { ...el, ...data } : el)
-      : [...elements, { ...data, id: Date.now(), type: 'code' }];
-    setElements(newElement);
     setIsCodeModalOpen(false);
     setEditingElement(null);
   };
@@ -84,21 +57,111 @@ const ElementEditor = ({ elements, setElements }) => {
     setElements(elements.filter(el => el.id !== id));
   };
 
+  const handleDragStart = (event, element) => {
+    setDraggingElement(element);
+    setSelectedElement(element);
+    setDragStart({
+      x: event.clientX,
+      y: event.clientY,
+      offsetX: element.x,
+      offsetY: element.y,
+    });
+    event.stopPropagation();
+  };
+
+  const handleDragMove = (event) => {
+    if (!draggingElement) return;
+
+    const dx = event.clientX - dragStart.x;
+    const dy = event.clientY - dragStart.y;
+
+    const newX = dragStart.offsetX + (dx / window.innerWidth) * 100;
+    const newY = dragStart.offsetY + (dy / window.innerHeight) * 100;
+
+    const constrainedX = Math.max(0, Math.min(newX, 100 - draggingElement.width));
+    const constrainedY = Math.max(0, Math.min(newY, 100 - draggingElement.height));
+
+    setElements(elements.map(el => 
+      el.id === draggingElement.id
+        ? { ...el, x: constrainedX, y: constrainedY }
+        : el
+    ));
+  };
+
+  const handleDragEnd = () => {
+    setDraggingElement(null);
+  };
+
+  // Resizing logic without aspect ratio constraint
+  const handleResizeStart = (event, element, corner) => {
+    event.stopPropagation();
+    setResizingElement(element);
+    setResizeStart({
+      x: event.clientX,
+      y: event.clientY,
+      width: element.width,
+      height: element.height,
+      corner
+    });
+  };
+
+  const handleResizeMove = (event) => {
+    if (!resizingElement) return;
+
+    const dx = event.clientX - resizeStart.x;
+    const dy = event.clientY - resizeStart.y;
+
+    let newWidth = resizeStart.width;
+    let newHeight = resizeStart.height;
+
+    // Adjust width and height independently based on the corner being dragged
+    if (resizeStart.corner.includes('left')) {
+      newWidth = resizeStart.width - dx;
+    } else if (resizeStart.corner.includes('right')) {
+      newWidth = resizeStart.width + dx;
+    }
+
+    if (resizeStart.corner.includes('top')) {
+      newHeight = resizeStart.height - dy;
+    } else if (resizeStart.corner.includes('bottom')) {
+      newHeight = resizeStart.height + dy;
+    }
+
+    // Constrain the dimensions within slide bounds and minimum size
+    const slideWidth = 100;
+    const slideHeight = 100;
+    newWidth = Math.max(1, Math.min(newWidth, slideWidth - resizingElement.x));
+    newHeight = Math.max(1, Math.min(newHeight, slideHeight - resizingElement.y));
+
+    setElements(elements.map(el =>
+      el.id === resizingElement.id
+        ? { ...el, width: newWidth, height: newHeight }
+        : el
+    ));
+  };
+
+  const handleResizeEnd = () => {
+    setResizingElement(null);
+  };
+
   // Apply syntax highlighting whenever code elements change
   useEffect(() => {
     elements.forEach((el) => {
       if (el.type === 'code') {
         const codeBlock = document.getElementById(`code-${el.id}`);
         if (codeBlock) {
-          // Use auto-detection for syntax highlighting
-          codeBlock.innerHTML = hljs.highlightAuto(el.code).value;
+          hljs.highlightElement(codeBlock);
         }
       }
     });
   }, [elements]);
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div
+      style={{ width: '100%', height: '100%', position: 'relative' }}
+      onMouseMove={(e) => { handleDragMove(e); handleResizeMove(e); }}
+      onMouseUp={() => { handleDragEnd(); handleResizeEnd(); }}
+    >
       {elements.map(el => (
         <div
           key={el.id}
@@ -108,22 +171,19 @@ const ElementEditor = ({ elements, setElements }) => {
             left: `${el.x}%`,
             width: `${el.width}%`,
             height: `${el.height}%`,
-            cursor: 'pointer',
-            border: el.type === 'text' || el.type === 'code' ? '1px solid #ccc' : 'none',
+            cursor: selectedElement?.id === el.id ? 'auto' : 'pointer',
+            border: '1px solid #ccc',
             fontSize: el.type === 'text' ? `${el.fontSize}em` : 'inherit',
             color: el.type === 'text' ? el.color : 'inherit',
             overflow: 'hidden'
           }}
-          onDoubleClick={() => {
-            if (el.type === 'text') openTextModal(el);
-            else if (el.type === 'image') openImageModal(el);
-            else if (el.type === 'video') openVideoModal(el);
-            else if (el.type === 'code') openCodeModal(el);
-          }}
+          onClick={() => setSelectedElement(el)}
+          onDoubleClick={() => openModal(el, el.type)}
           onContextMenu={(e) => {
             e.preventDefault();
             deleteElement(el.id);
           }}
+          onMouseDown={(event) => handleDragStart(event, el)}
         >
           {el.type === 'text' && el.text}
           {el.type === 'image' && el.src && (
@@ -153,38 +213,55 @@ const ElementEditor = ({ elements, setElements }) => {
               </code>
             </pre>
           )}
+
+          {selectedElement?.id === el.id && (
+            <>
+              {['top-left', 'top-right', 'bottom-left', 'bottom-right'].map(corner => (
+                <div
+                  key={corner}
+                  style={{
+                    position: 'absolute',
+                    [corner.split('-')[0]]: '-5px',
+                    [corner.split('-')[1]]: '-5px',
+                    width: '10px',
+                    height: '10px',
+                    backgroundColor: 'blue',
+                    cursor: `${corner}-resize`
+                  }}
+                  onMouseDown={(event) => handleResizeStart(event, el, corner)}
+                />
+              ))}
+            </>
+          )}
         </div>
       ))}
 
       {isTextModalOpen && (
         <TextModal
           initialData={editingElement}
-          onSave={handleSaveText}
-          onClose={() => setIsTextModalOpen(false)}
+          onSave={(data) => handleSave(data, 'text')}
+          onClose={closeModal}
         />
       )}
-
       {isImageModalOpen && (
         <ImageModal
           initialData={editingElement}
-          onSave={handleSaveImage}
-          onClose={() => setIsImageModalOpen(false)}
+          onSave={(data) => handleSave(data, 'image')}
+          onClose={closeModal}
         />
       )}
-
       {isVideoModalOpen && (
         <VideoModal
           initialData={editingElement}
-          onSave={handleSaveVideo}
-          onClose={() => setIsVideoModalOpen(false)}
+          onSave={(data) => handleSave(data, 'video')}
+          onClose={closeModal}
         />
       )}
-
       {isCodeModalOpen && (
         <CodeModal
           initialData={editingElement}
-          onSave={handleSaveCode}
-          onClose={() => setIsCodeModalOpen(false)}
+          onSave={(data) => handleSave(data, 'code')}
+          onClose={closeModal}
         />
       )}
     </div>

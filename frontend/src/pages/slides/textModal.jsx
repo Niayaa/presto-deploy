@@ -7,17 +7,17 @@ const TextModal = ({ onSave, onClose, initialData }) => {
   const [height, setHeight] = useState(initialData?.height || 10);
   const [fontSize, setFontSize] = useState(initialData?.fontSize || 1);
   const [color, setColor] = useState(initialData?.color || '#000000');
-  const [x, setX] = useState(initialData?.x || 0);
-  const [y, setY] = useState(initialData?.y || 0);
 
   const handleSave = () => {
-    onSave({ text, width, height, fontSize, color, x, y });
+    const data = { text, width, height, fontSize, color };
+    onSave(data);
   };
 
   return (
     <div className="modal">
       <div className="modal-content">
         <h3>{initialData ? 'Edit Text Element' : 'Add Text Element'}</h3>
+        
         <label>Text:</label>
         <textarea value={text} onChange={(e) => setText(e.target.value)} />
 
@@ -32,12 +32,6 @@ const TextModal = ({ onSave, onClose, initialData }) => {
 
         <label>Color:</label>
         <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />
-
-        <label>X Position (%):</label>
-        <input type="number" value={x} onChange={(e) => setX(parseFloat(e.target.value))} />
-
-        <label>Y Position (%):</label>
-        <input type="number" value={y} onChange={(e) => setY(parseFloat(e.target.value))} />
 
         <button onClick={handleSave}>Save</button>
         <button onClick={onClose}>Cancel</button>

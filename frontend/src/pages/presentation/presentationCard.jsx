@@ -13,7 +13,7 @@ const PresentationCard = ({ presentation }) => {
       <h3>{presentation.name || 'Untitled'}</h3>
       <p>{presentation.description || ''}</p>
       <p>Slides: {presentation.slides.length}</p>
-    </div>/Users/akiya/Desktop/6080/presto/frontend/src/pages/presentation/presentationContext.jsx
+    </div>
   );
 };
 

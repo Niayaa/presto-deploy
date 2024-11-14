@@ -1,5 +1,5 @@
 import './dashboard.css';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../slides/sideBar';
 import Slide from '../slides/slide';
 import TextModal from '../slides/textModal';
@@ -8,13 +8,22 @@ import VideoModal from '../slides/videoModal';
 import CodeModal from '../slides/codeModal';
 
 const SlideEditor = () => {
-  const [slides, setSlides] = useState([{ id: Date.now(), elements: [] }]);
+  const [slides, setSlides] = useState(() => {
+    const savedSlides = localStorage.getItem('slides');
+    return savedSlides ? JSON.parse(savedSlides) : [{ id: Date.now(), elements: [] }];
+  });
+
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isTextModalOpen, setIsTextModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [editingElement, setEditingElement] = useState(null);
+
+  // Save slides to local storage whenever they change
+  useEffect(() => {
+    localStorage.setItem('slides', JSON.stringify(slides));
+  }, [slides]);
 
   const handleNewSlide = () => {
     setSlides([...slides, { id: Date.now(), elements: [] }]);
@@ -83,12 +92,14 @@ const SlideEditor = () => {
 
   const handleSaveVideo = (data) => {
     const newSlides = [...slides];
-    const newElement = editingElement ? 
-      { ...editingElement, ...data } : 
-      { id: Date.now(), type: 'video', ...data };
-    newSlides[currentSlideIndex].elements = editingElement ? 
-      newSlides[currentSlideIndex].elements.map(el => el.id === editingElement.id ? newElement : el) :
-      [...newSlides[currentSlideIndex].elements, newElement];
+    if (editingElement) {
+      newSlides[currentSlideIndex].elements = newSlides[currentSlideIndex].elements.map(el =>
+        el.id === editingElement.id ? { ...el, ...data } : el
+      );
+    } else {
+      const newElement = { id: Date.now(), type: 'video', ...data };
+      newSlides[currentSlideIndex].elements.push(newElement);
+    }
     setSlides(newSlides);
     setIsVideoModalOpen(false);
     setEditingElement(null);

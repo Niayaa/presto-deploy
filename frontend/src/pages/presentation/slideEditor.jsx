@@ -5,7 +5,6 @@ import TextModal from '../slides/textModal';
 import ImageModal from '../slides/imageModal';
 import VideoModal from '../slides/videoModal';
 import CodeModal from '../slides/codeModal';
-import BackgroundModal from '../slides/backgroundModal';
 
 const SlideEditor = ({ presentationId }) => {
   const [store, setStore] = useState({ presentations: [] });
@@ -15,7 +14,6 @@ const SlideEditor = ({ presentationId }) => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
-  const [isBackgroundModalOpen, setIsBackgroundModalOpen] = useState(false);
   const [editingElement, setEditingElement] = useState(null);
 
   useEffect(() => {
@@ -33,6 +31,7 @@ const SlideEditor = ({ presentationId }) => {
         if (response.ok) {
           const data = await response.json();
           setStore(data.store);
+
           const foundPresentation = data.store.presentations.find(
             (p) => p.id === Number(presentationId)
           );
@@ -53,11 +52,25 @@ const SlideEditor = ({ presentationId }) => {
   const savePresentation = async () => {
     try {
       const token = localStorage.getItem('token');
-      const updatedPresentations = store.presentations.map((p) =>
-        p.id === Number(presentationId) ? presentation : p
-      );
+      const updatedPresentation = {
+        background: presentation.background || {},
+        description: presentation.description || "",
+        id: presentation.id,
+        name: presentation.name || "Untitled",
+        slides: presentation.slides.map(slide => ({
+          id: slide.id,
+          content: slide.content || '',
+          elements: slide.elements || []
+        })),
+        thumbnail: presentation.thumbnail || null
+      };
 
-      const updatedStore = { ...store, presentations: updatedPresentations };
+      const updatedStore = {
+        ...store,
+        presentations: store.presentations.map(p => 
+          p.id === presentation.id ? updatedPresentation : p
+        )
+      };
 
       const response = await fetch(`http://localhost:5005/store`, {
         method: 'PUT',
@@ -80,7 +93,8 @@ const SlideEditor = ({ presentationId }) => {
   };
 
   const handleNewSlide = () => {
-    const newSlides = [...presentation.slides, { id: Date.now(), elements: [] }];
+    const newSlide = { id: Date.now(), elements: [] };
+    const newSlides = [...presentation.slides, newSlide];
     setPresentation((prev) => ({ ...prev, slides: newSlides }));
     setCurrentSlideIndex(newSlides.length - 1);
   };
@@ -104,14 +118,12 @@ const SlideEditor = ({ presentationId }) => {
     }
 
     const newElement = {
-      id: Date.now(), // Unique ID for the element
+      id: Date.now(),
       type,
-      ...data, // Include the provided data (e.g., text, image URL)
+      ...data,
     };
 
     const updatedSlides = [...presentation.slides];
-
-    // Ensure the elements array exists
     if (!updatedSlides[currentSlideIndex].elements) {
       updatedSlides[currentSlideIndex].elements = [];
     }
@@ -124,98 +136,6 @@ const SlideEditor = ({ presentationId }) => {
     }));
 
     closeModal();
-  };
-
-  const openPreview = () => {
-    const previewWindow = window.open('', '_blank');
-    const previewContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          body {
-            margin: 0;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-          }
-          .slide-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100vw;
-            height: 100vh;
-            background-color: #f4f4f9;
-          }
-          .slide {
-            width: 90%;
-            height: 80%;
-            background-color: white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
-          }
-          .controls {
-            position: fixed;
-            bottom: 20px;
-            width: 100%;
-            text-align: center;
-          }
-          .controls button {
-            margin: 0 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-          }
-        </style>
-      </head>
-      <body>
-        <div id="app"></div>
-        <script>
-          let currentSlideIndex = 0;
-          const slides = ${JSON.stringify(presentation.slides)};
-
-          function renderSlide(index) {
-            const app = document.getElementById('app');
-            app.innerHTML = '';
-            const slideContainer = document.createElement('div');
-            slideContainer.className = 'slide-container';
-
-            const slide = document.createElement('div');
-            slide.className = 'slide';
-            slide.innerHTML = slides[index].elements
-              .map(el => el.type === 'text' ? '<div>' + el.text + '</div>' : '')
-              .join('');
-
-            slideContainer.appendChild(slide);
-            app.appendChild(slideContainer);
-
-            const controls = document.createElement('div');
-            controls.className = 'controls';
-
-            const prevButton = document.createElement('button');
-            prevButton.innerText = 'Previous';
-            prevButton.disabled = index === 0;
-            prevButton.onclick = () => renderSlide(index - 1);
-            controls.appendChild(prevButton);
-
-            const nextButton = document.createElement('button');
-            nextButton.innerText = 'Next';
-            nextButton.disabled = index === slides.length - 1;
-            nextButton.onclick = () => renderSlide(index + 1);
-            controls.appendChild(nextButton);
-
-            const slideNumber = document.createElement('span');
-            slideNumber.innerText = \`Slide \${index + 1} of \${slides.length}\`;
-            controls.appendChild(slideNumber);
-
-            document.body.appendChild(controls);
-          }
-
-          renderSlide(currentSlideIndex);
-        </script>
-      </body>
-      </html>
-    `;
-    previewWindow.document.write(previewContent);
-    previewWindow.document.close();
   };
 
   if (!presentation) {
@@ -232,8 +152,7 @@ const SlideEditor = ({ presentationId }) => {
       />
       <button onClick={handleNewSlide}>New Slide</button>
       <button onClick={handleDeleteSlide}>Delete Slide</button>
-      <button onClick={openPreview}>Preview</button>
-      <button onClick={savePresentation}>Save Changes</button> {/* 新增的按钮 */}
+      <button onClick={savePresentation}>Save Changes</button>
       <div className="slide-controls">
         <button
           onClick={() => setCurrentSlideIndex(currentSlideIndex - 1)}
@@ -249,7 +168,6 @@ const SlideEditor = ({ presentationId }) => {
           Next
         </button>
       </div>
-  
       <Slide
         elements={presentation.slides[currentSlideIndex]?.elements || []}
         setElements={(updatedElements) => {
@@ -258,7 +176,6 @@ const SlideEditor = ({ presentationId }) => {
           setPresentation((prev) => ({ ...prev, slides: newSlides }));
         }}
       />
-  
       {isTextModalOpen && (
         <TextModal
           initialData={editingElement}
@@ -266,7 +183,6 @@ const SlideEditor = ({ presentationId }) => {
           onClose={() => setIsTextModalOpen(false)}
         />
       )}
-  
       {isImageModalOpen && (
         <ImageModal
           initialData={editingElement}
@@ -274,7 +190,6 @@ const SlideEditor = ({ presentationId }) => {
           onClose={() => setIsImageModalOpen(false)}
         />
       )}
-  
       {isVideoModalOpen && (
         <VideoModal
           initialData={editingElement}
@@ -282,24 +197,11 @@ const SlideEditor = ({ presentationId }) => {
           onClose={() => setIsVideoModalOpen(false)}
         />
       )}
-  
       {isCodeModalOpen && (
         <CodeModal
           initialData={editingElement}
           onSave={(data) => handleSaveElement(data, 'code', () => setIsCodeModalOpen(false))}
           onClose={() => setIsCodeModalOpen(false)}
-        />
-      )}
-  
-      {isBackgroundModalOpen && (
-        <BackgroundModal
-          currentBackground={presentation.background || {}}
-          onSave={(newBackground) => {
-            const updatedSlides = [...presentation.slides];
-            updatedSlides[currentSlideIndex].background = newBackground;
-            setPresentation((prev) => ({ ...prev, slides: updatedSlides }));
-          }}
-          onClose={() => setIsBackgroundModalOpen(false)}
         />
       )}
     </div>

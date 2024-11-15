@@ -1,8 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
-import hljs from 'highlight.js';
-import 'highlight.js/styles/default.css';
-
+import React, { useState } from 'react';
 import TextModal from './textModal';
 import ImageModal from './imageModal';
 import VideoModal from './videoModal';

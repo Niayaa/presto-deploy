@@ -1,4 +1,3 @@
-import './dashboard.css';
 import React, { useState, useEffect } from 'react';
 import Sidebar from '../slides/sideBar';
 import Slide from '../slides/slide';
@@ -7,8 +6,9 @@ import ImageModal from '../slides/imageModal';
 import VideoModal from '../slides/videoModal';
 import CodeModal from '../slides/codeModal';
 
-const SlideEditor = ({ presentationId, apiEndpoint }) => {
-  const [slides, setSlides] = useState([]);
+const SlideEditor = ({ presentationId }) => {
+  const [store, setStore] = useState({ presentations: [] });
+  const [presentation, setPresentation] = useState(null);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isTextModalOpen, setIsTextModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -16,12 +16,11 @@ const SlideEditor = ({ presentationId, apiEndpoint }) => {
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [editingElement, setEditingElement] = useState(null);
 
-  // Fetch slides from the server
   useEffect(() => {
-    const fetchSlides = async () => {
+    const fetchStore = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${apiEndpoint}/presentations/${presentationId}`, {
+        const response = await fetch(`http://localhost:5005/store`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -31,78 +30,115 @@ const SlideEditor = ({ presentationId, apiEndpoint }) => {
 
         if (response.ok) {
           const data = await response.json();
-          setSlides(data.slides || [{ id: Date.now(), elements: [] }]);
+          setStore(data.store);
+
+          const foundPresentation = data.store.presentations.find(
+            (p) => p.id === Number(presentationId)
+          );
+          if (foundPresentation) {
+            setPresentation(foundPresentation);
+          }
         } else {
-          console.error('Failed to fetch slides');
+          console.error('Failed to fetch store');
         }
       } catch (error) {
-        console.error('Error fetching slides:', error);
+        console.error('Error fetching store:', error);
       }
     };
 
-    fetchSlides();
-  }, [presentationId, apiEndpoint]);
+    fetchStore();
+  }, [presentationId]);
 
-  // Save slides to the server
-  const saveSlides = async () => {
+  const savePresentation = async () => {
     try {
       const token = localStorage.getItem('token');
       const updatedPresentation = {
-        slides,
+        background: presentation.background || {},
+        description: presentation.description || "",
+        id: presentation.id,
+        name: presentation.name || "Untitled",
+        slides: presentation.slides.map(slide => ({
+          id: slide.id,
+          content: slide.content || '',
+          elements: slide.elements || []
+        })),
+        thumbnail: presentation.thumbnail || null
       };
 
-      const response = await fetch(`${apiEndpoint}/presentations/${presentationId}`, {
+      const updatedStore = {
+        ...store,
+        presentations: store.presentations.map(p => 
+          p.id === presentation.id ? updatedPresentation : p
+        )
+      };
+
+      const response = await fetch(`http://localhost:5005/store`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(updatedPresentation),
+        body: JSON.stringify({ store: updatedStore }),
       });
 
       if (response.ok) {
-        console.log('Slides saved successfully');
+        console.log('Presentation saved successfully');
+        setStore(updatedStore);
       } else {
-        console.error('Failed to save slides');
+        console.error('Failed to save presentation');
       }
     } catch (error) {
-      console.error('Error saving slides:', error);
+      console.error('Error saving presentation:', error);
     }
   };
 
   const handleNewSlide = () => {
-    setSlides([...slides, { id: Date.now(), elements: [] }]);
-    setCurrentSlideIndex(slides.length);
+    const newSlide = { id: Date.now(), elements: [] };
+    const newSlides = [...presentation.slides, newSlide];
+    setPresentation((prev) => ({ ...prev, slides: newSlides }));
+    setCurrentSlideIndex(newSlides.length - 1);
   };
 
   const handleDeleteSlide = () => {
-    if (slides.length > 1) {
-      const newSlides = slides.filter((_, index) => index !== currentSlideIndex);
-      setSlides(newSlides);
-      setCurrentSlideIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+    if (presentation.slides.length > 1) {
+      const newSlides = presentation.slides.filter(
+        (_, index) => index !== currentSlideIndex
+      );
+      setPresentation((prev) => ({ ...prev, slides: newSlides }));
+      setCurrentSlideIndex(Math.max(currentSlideIndex - 1, 0));
     } else {
       alert('Cannot delete the only slide. Delete the presentation instead.');
     }
   };
 
-  const handleSaveElement = (data, type) => {
-    const newSlides = [...slides];
-    const currentSlide = newSlides[currentSlideIndex];
-
-    if (editingElement) {
-      currentSlide.elements = currentSlide.elements.map((el) =>
-        el.id === editingElement.id ? { ...el, ...data } : el
-      );
-    } else {
-      const newElement = { id: Date.now(), type, ...data };
-      currentSlide.elements.push(newElement);
+  const handleSaveElement = (data, type, closeModal) => {
+    if (currentSlideIndex < 0 || currentSlideIndex >= presentation.slides.length) {
+      console.error('Invalid slide index');
+      return;
     }
 
-    setSlides(newSlides);
-    setEditingElement(null);
+    const newElement = {
+      id: Date.now(),
+      type,
+      ...data,
+    };
+
+    const updatedSlides = [...presentation.slides];
+    if (!updatedSlides[currentSlideIndex].elements) {
+      updatedSlides[currentSlideIndex].elements = [];
+    }
+
+    updatedSlides[currentSlideIndex].elements.push(newElement);
+
+    setPresentation((prev) => ({
+      ...prev,
+      slides: updatedSlides,
+    }));
+
+    closeModal();
   };
 
-  if (!slides.length) {
+  if (!presentation) {
     return <div>Loading...</div>;
   }
 
@@ -116,7 +152,7 @@ const SlideEditor = ({ presentationId, apiEndpoint }) => {
       />
       <button onClick={handleNewSlide}>New Slide</button>
       <button onClick={handleDeleteSlide}>Delete Slide</button>
-      <button onClick={saveSlides}>Save Changes</button>
+      <button onClick={savePresentation}>Save Changes</button>
       <div className="slide-controls">
         <button
           onClick={() => setCurrentSlideIndex(currentSlideIndex - 1)}
@@ -124,55 +160,52 @@ const SlideEditor = ({ presentationId, apiEndpoint }) => {
         >
           Prev
         </button>
-        <span>
-          Slide {currentSlideIndex + 1} of {slides.length}
-        </span>
+        <span>Slide {currentSlideIndex + 1} of {presentation.slides.length}</span>
         <button
           onClick={() => setCurrentSlideIndex(currentSlideIndex + 1)}
-          disabled={currentSlideIndex === slides.length - 1}
+          disabled={currentSlideIndex === presentation.slides.length - 1}
         >
           Next
         </button>
       </div>
       <Slide
-        elements={slides[currentSlideIndex]?.elements || []}
+        elements={presentation.slides[currentSlideIndex]?.elements || []}
         setElements={(updatedElements) => {
-          const newSlides = [...slides];
+          const newSlides = [...presentation.slides];
           newSlides[currentSlideIndex].elements = updatedElements;
-          setSlides(newSlides);
+          setPresentation((prev) => ({ ...prev, slides: newSlides }));
         }}
       />
       {isTextModalOpen && (
         <TextModal
           initialData={editingElement}
-          onSave={(data) => handleSaveElement(data, 'text')}
+          onSave={(data) => handleSaveElement(data, 'text', () => setIsTextModalOpen(false))}
           onClose={() => setIsTextModalOpen(false)}
         />
       )}
       {isImageModalOpen && (
         <ImageModal
           initialData={editingElement}
-          onSave={(data) => handleSaveElement(data, 'image')}
+          onSave={(data) => handleSaveElement(data, 'image', () => setIsImageModalOpen(false))}
           onClose={() => setIsImageModalOpen(false)}
         />
       )}
       {isVideoModalOpen && (
         <VideoModal
           initialData={editingElement}
-          onSave={(data) => handleSaveElement(data, 'video')}
+          onSave={(data) => handleSaveElement(data, 'video', () => setIsVideoModalOpen(false))}
           onClose={() => setIsVideoModalOpen(false)}
         />
       )}
       {isCodeModalOpen && (
         <CodeModal
           initialData={editingElement}
-          onSave={(data) => handleSaveElement(data, 'code')}
+          onSave={(data) => handleSaveElement(data, 'code', () => setIsCodeModalOpen(false))}
           onClose={() => setIsCodeModalOpen(false)}
         />
       )}
     </div>
-  );
+  );  
 };
 
 export default SlideEditor;
-

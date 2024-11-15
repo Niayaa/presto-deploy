@@ -8,10 +8,14 @@ const PresentationCard = ({ presentation }) => {
   return (
     <div className="presentation-card" onClick={() => navigate(`/editor/${presentation.id}`)}>
       <div className="thumbnail">
-        {presentation.thumbnail || <div className="placeholder">No Thumbnail</div>}
+        {presentation.thumbnail ? (
+          <img src={presentation.thumbnail} alt={`${presentation.name} Thumbnail`} />
+        ) : (
+          <div className="placeholder">No Thumbnail</div>
+        )}
       </div>
       <h3>{presentation.name || 'Untitled'}</h3>
-      <p>{presentation.description || ''}</p>
+      <p>{presentation.description || 'No description provided'}</p>
       <p>Slides: {presentation.slides.length}</p>
     </div>
   );

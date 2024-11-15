@@ -7,7 +7,7 @@ import ImageModal from '../slides/imageModal';
 import VideoModal from '../slides/videoModal';
 import CodeModal from '../slides/codeModal';
 
-const SlideEditor = ({presentationId }) => {
+const SlideEditor = ({ presentationId }) => {
   const [store, setStore] = useState({ presentations: [] });
   const [presentation, setPresentation] = useState(null);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
@@ -32,7 +32,7 @@ const SlideEditor = ({presentationId }) => {
         if (response.ok) {
           const data = await response.json();
           setStore(data.store);
-          console.log('found data',data.store.presentations);
+          console.log('found data', data.store.presentations);
           const foundPresentation = data.store.presentations.find(p => {
             console.log(`Checking ID: ${p.id} against ${presentationId}`);
             return p.id === Number(presentationId); // Ensure both are numbers for comparison
@@ -56,33 +56,35 @@ const SlideEditor = ({presentationId }) => {
   const savePresentation = async () => {
     try {
       const token = localStorage.getItem('token');
-  
+
+      // 创建一个新的 presentations 数组，只有指定的 presentation 被修改
       const updatedPresentations = store.presentations.map(p =>
         p.id === Number(presentationId) ? presentation : p
       );
-  
+
+      // 构造更新后的 store 对象，包含完整的 presentations 数组
       const updatedStore = { ...store, presentations: updatedPresentations };
-  
+
       const response = await fetch(`http://localhost:5005/store`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ store: updatedStore })
+        body: JSON.stringify({ store: updatedStore }) // 发送完整的 store 数据
       });
-  
+
       if (!response.ok) {
         console.error('Failed to save presentation');
       } else {
         console.log('Presentation saved successfully');
-        setStore(updatedStore); 
+        // 更新本地状态以保持同步
+        setStore(updatedStore);
       }
     } catch (error) {
       console.error('Error saving presentation:', error);
     }
   };
-  
 
   const handleNewSlide = () => {
     const newSlides = [...presentation.slides, { id: Date.now(), elements: [] }];

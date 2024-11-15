@@ -7,45 +7,41 @@ const Dashboard = () => {
   const [presentations, setPresentations] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Function to fetch presentations from the backend
+  // Fetch presentations from the backend on component mount
   const fetchPresentations = async () => {
     try {
       const token = localStorage.getItem('token'); 
-      console.log('presentation token',token);
-  
       const response = await fetch('http://localhost:5005/store', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token// Include the token in the Authorization header
+          'Authorization': token
         },
       });
   
-      if (!response.ok) {
+      if (response.ok) {
+        const data = await response.json();
+        if (data.store && data.store.presentations) {
+          setPresentations(data.store.presentations);
+          console.log('Store data received:', data.store);
+        }
+      } else {
         console.error(`Failed to fetch presentations: ${response.status} ${response.statusText}`);
-        return;
-      }
-  
-      const data = await response.json();
-      if (data.store && data.store.presentations) {
-        setPresentations(data.store.presentations);
-        console.log('store data received here',data.store);
       }
     } catch (error) {
       console.error("Error fetching presentations:", error);
     }
   };
-  
 
+  // Save updated presentations to the backend
   const savePresentations = async (updatedPresentations) => {
     try {
-      const token = localStorage.getItem('token'); // Retrieve the token from localStorage
-  
+      const token = localStorage.getItem('token');
       const response = await fetch('http://localhost:5005/store', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token, // Include the token in the Authorization header
+          'Authorization': token,
         },
         body: JSON.stringify({
           store: {
@@ -56,21 +52,20 @@ const Dashboard = () => {
   
       if (!response.ok) {
         console.error(`Failed to save presentations to backend: ${response.status} ${response.statusText}`);
+      } else {
+        console.log('Presentations saved successfully');
       }
     } catch (error) {
       console.error("Error saving presentations:", error);
     }
   };
 
-//initialize for fetching
+  // Fetch presentations when component mounts
   useEffect(() => {
     fetchPresentations();
   }, []);
 
-  useEffect(() => {
-    savePresentations(presentations);
-  }, [presentations]);
-
+  // Function to handle creating a new presentation
   const handleCreatePresentation = (name) => {
     const newPresentation = {
       id: Date.now(),
@@ -81,6 +76,7 @@ const Dashboard = () => {
     };
     const updatedPresentations = [...presentations, newPresentation];
     setPresentations(updatedPresentations);
+    savePresentations(updatedPresentations); // Save only when a new presentation is added
     setIsModalOpen(false);
   };
 
@@ -95,10 +91,14 @@ const Dashboard = () => {
         ))}
       </div>
       {isModalOpen && (
-        <NewPresentationModal onCreate={handleCreatePresentation} onClose={() => setIsModalOpen(false)} />
+        <NewPresentationModal 
+          onCreate={handleCreatePresentation} 
+          onClose={() => setIsModalOpen(false)} 
+        />
       )}
     </div>
   );
 };
 
 export default Dashboard;
+

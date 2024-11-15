@@ -1,19 +1,32 @@
-
 import React from 'react';
 import ElementEditor from './elementEditor';
 import './slide.css';
 
 const Slide = ({ elements, setElements, background }) => {
+  const getBackgroundStyle = () => {
+    if (!background) return { backgroundColor: 'white' };
+
+    switch (background.type) {
+      case 'color':
+        return { backgroundColor: background.color };
+      case 'gradient':
+        return {
+          backgroundImage: `linear-gradient(${background.direction}, ${background.gradient[0]}, ${background.gradient[1]})`,
+        };
+      case 'image':
+        return {
+          backgroundImage: `url(${background.image})`,
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+        };
+      default:
+        return { backgroundColor: 'white' };
+    }
+  };
+
   return (
-    <div
-      className="slide-container"
-      style={{
-        background: background.type === 'color' ? background.color
-          : background.type === 'gradient' ? `linear-gradient(to right, ${background.gradient[0]}, ${background.gradient[1]})`
-          : background.type === 'image' ? `url(${background.image}) no-repeat center/cover`
-          : 'white',
-      }}
-    >
+    <div className="slide-container" style={getBackgroundStyle()}>
       <div className="slide">
         <ElementEditor elements={elements} setElements={setElements} />
       </div>

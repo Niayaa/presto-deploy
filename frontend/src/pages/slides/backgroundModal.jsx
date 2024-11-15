@@ -26,8 +26,6 @@ const BackgroundModal = ({ currentBackground, onSave, onClose }) => {
     <div className="modal">
       <div className="modal-content">
         <h3>Background Picker</h3>
-
-        {/* Solid Color Option */}
         <div>
           <label>
             <input
@@ -43,7 +41,6 @@ const BackgroundModal = ({ currentBackground, onSave, onClose }) => {
           )}
         </div>
 
-        {/* Gradient Option */}
         <div>
           <label>
             <input

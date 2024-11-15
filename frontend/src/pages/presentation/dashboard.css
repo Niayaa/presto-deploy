@@ -1,32 +1,45 @@
+/* General Reset and Utility Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+/* Responsive Layout for Dashboard */
 .dashboard {
   display: flex;
+  flex-direction: column; /* Stack content vertically on small screens */
   height: 100vh;
   width: 100%;
 }
 
 .dashboard aside {
-  width: 200px;
-  padding: 20px;
-  background-color: grey;
+  width: 100%; /* Full width on mobile */
+  padding: 10px;
+  background-color: #333;
   color: white;
+  display: flex;
+  justify-content: center; 
 }
 
 .dashboard aside button {
-  width: 100%;
+  width: 90%;
+  max-width: 200px;
   padding: 10px;
-  background-color: darkgray;
+  background-color: #4CAF50;
   border: none;
   border-radius: 5px;
   color: white;
+  font-size: 1rem;
   cursor: pointer;
 }
 
 .dashboard aside button:hover {
-  background-color: blueviolet;
+  background-color: #45a049;
 }
 
 .dashboard .presentation-list {
-  flex-grow: 1;
   display: grid;
   gap: 15px;
   padding: 20px;
@@ -34,12 +47,18 @@
   overflow-y: auto;
 }
 
+@media (max-width: 600px) {
+  /* Adjust presentation list grid on smaller screens */
+  .dashboard .presentation-list {
+    grid-template-columns: 1fr; /* Single column layout on mobile */
+  }
+}
+
 /* Presentation Card Style */
 .presentation-card {
   background: white;
   padding: 10px;
   border-radius: 5px;
-  height: 200px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: transform 0.2s ease;
@@ -89,7 +108,8 @@
 }
 
 .modal-content {
-  width: 300px;
+  width: 90%;
+  max-width: 300px;
   padding: 20px;
   background-color: white;
   border-radius: 8px;
@@ -99,6 +119,7 @@
 .modal-content h2 {
   margin-bottom: 15px;
   color: #333;
+  font-size: 1.25rem;
 }
 
 .modal-content input[type="text"] {
@@ -120,12 +141,12 @@
 }
 
 .modal-content button:first-of-type {
-  background-color: blueviolet;
+  background-color: #4CAF50;
   color: white;
 }
 
 .modal-content button:first-of-type:hover {
-  background-color: blueviolet;
+  background-color: #45a049;
 }
 
 .modal-content button:last-of-type {
@@ -137,9 +158,12 @@
   background-color: #ccc;
 }
 
-/* Editor Page */
+/* Responsive Editor Page */
 .editor-page {
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .editor-page h2 {
@@ -149,17 +173,20 @@
 
 .editor-page button {
   padding: 8px 15px;
-  margin-right: 10px;
+  margin: 5px 0;
   border: none;
   border-radius: 5px;
-  background-color: blueviolet;
+  background-color: #4CAF50;
   color: white;
+  font-size: 1rem;
   cursor: pointer;
+  width: 90%;
+  max-width: 200px;
   transition: background-color 0.2s ease;
 }
 
 .editor-page button:hover {
-  background-color: blueviolet;
+  background-color: #45a049;
 }
 
 .editor-page button:last-of-type {
@@ -174,6 +201,7 @@
 .slide-editor {
   margin-top: 20px;
   text-align: center;
+  width: 100%;
 }
 
 .slide-editor button {
@@ -181,7 +209,7 @@
   padding: 5px 10px;
   border: none;
   border-radius: 5px;
-  background-color: blueviolet;
+  background-color: #4CAF50;
   color: white;
   cursor: pointer;
 }

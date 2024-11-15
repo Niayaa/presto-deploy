@@ -62,14 +62,6 @@ function Login() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <div className="remember-me">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={() => setRememberMe(!rememberMe)}
-            />
-            <label>Remember me</label>
-          </div>
           {error && <p className="error-message">{error}</p>}
           <button type="submit" className="login-button">Log in</button>
         </form>

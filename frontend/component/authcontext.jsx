@@ -1,10 +1,12 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(null);
+  const navigate = useNavigate(); // Initialize navigate hook
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
@@ -25,6 +27,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     setIsLoggedIn(false);
     setToken(null);
+    navigate('/'); // Redirect to home page after logout
   };
 
   return (

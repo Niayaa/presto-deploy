@@ -115,7 +115,7 @@ const EditorPage = () => {
       <button onClick={() => navigate('/dashboard')}>Back</button>
       <button onClick={handleDelete}>Delete Presentation</button>
 
-      <SlideEditor presentation={presentation} />
+      <SlideEditor presentation={presentation} presentationId={presentationId} />
 
       {isTitleModalOpen && (
         <EditTitleModal

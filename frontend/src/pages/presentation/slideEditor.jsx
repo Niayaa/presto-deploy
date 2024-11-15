@@ -7,12 +7,9 @@ import ImageModal from '../slides/imageModal';
 import VideoModal from '../slides/videoModal';
 import CodeModal from '../slides/codeModal';
 
-const SlideEditor = () => {
-  const [slides, setSlides] = useState(() => {
-    const savedSlides = localStorage.getItem('slides');
-    return savedSlides ? JSON.parse(savedSlides) : [{ id: Date.now(), elements: [] }];
-  });
-
+const SlideEditor = ({presentationId }) => {
+  const [store, setStore] = useState({ presentations: [] });
+  const [presentation, setPresentation] = useState(null);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isTextModalOpen, setIsTextModalOpen] = useState(false);
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -20,21 +17,84 @@ const SlideEditor = () => {
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
   const [editingElement, setEditingElement] = useState(null);
 
-  // Save slides to local storage whenever they change
   useEffect(() => {
-    localStorage.setItem('slides', JSON.stringify(slides));
-  }, [slides]);
+    const fetchStore = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`http://localhost:5005/store`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setStore(data.store);
+          console.log('found data',data.store.presentations);
+          const foundPresentation = data.store.presentations.find(p => {
+            console.log(`Checking ID: ${p.id} against ${presentationId}`);
+            return p.id === Number(presentationId); // Ensure both are numbers for comparison
+          });
+          if (foundPresentation) {
+            setPresentation(foundPresentation);
+          } else {
+            console.warn(`Presentation with ID ${presentationId} not found.`);
+          }
+        } else {
+          console.error('Failed to fetch store');
+        }
+      } catch (error) {
+        console.error('Error fetching store:', error);
+      }
+    };
+
+    fetchStore();
+  }, [presentationId]);
+
+  const savePresentation = async () => {
+    try {
+      const token = localStorage.getItem('token');
+  
+      const updatedPresentations = store.presentations.map(p =>
+        p.id === Number(presentationId) ? presentation : p
+      );
+  
+      const updatedStore = { ...store, presentations: updatedPresentations };
+  
+      const response = await fetch(`http://localhost:5005/store`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ store: updatedStore })
+      });
+  
+      if (!response.ok) {
+        console.error('Failed to save presentation');
+      } else {
+        console.log('Presentation saved successfully');
+        setStore(updatedStore); 
+      }
+    } catch (error) {
+      console.error('Error saving presentation:', error);
+    }
+  };
+  
 
   const handleNewSlide = () => {
-    setSlides([...slides, { id: Date.now(), elements: [] }]);
-    setCurrentSlideIndex(slides.length);
+    const newSlides = [...presentation.slides, { id: Date.now(), elements: [] }];
+    setPresentation(prev => ({ ...prev, slides: newSlides }));
+    setCurrentSlideIndex(newSlides.length - 1);
   };
 
   const handleDeleteSlide = () => {
-    if (slides.length > 1) {
-      const newSlides = slides.filter((_, index) => index !== currentSlideIndex);
-      setSlides(newSlides);
-      setCurrentSlideIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+    if (presentation.slides.length > 1) {
+      const newSlides = presentation.slides.filter((_, index) => index !== currentSlideIndex);
+      setPresentation(prev => ({ ...prev, slides: newSlides }));
+      setCurrentSlideIndex(Math.max(currentSlideIndex - 1, 0));
     } else {
       alert("Cannot delete the only slide. Delete the presentation instead.");
     }
@@ -60,64 +120,24 @@ const SlideEditor = () => {
     setIsCodeModalOpen(true);
   };
 
-  const handleSaveText = (data) => {
-    const newSlides = [...slides];
-    if (editingElement) {
-      newSlides[currentSlideIndex].elements = newSlides[currentSlideIndex].elements.map(el =>
-        el.id === editingElement.id ? { ...el, ...data } : el
-      );
-    } else {
-      const newElement = { id: Date.now(), type: 'text', ...data };
-      newSlides[currentSlideIndex].elements.push(newElement);
-    }
-    setSlides(newSlides);
-    setIsTextModalOpen(false);
+  const handleSaveElement = (data, type, closeModal) => {
+    const newElement = editingElement
+      ? { ...editingElement, ...data }
+      : { id: Date.now(), type, ...data };
+
+    const newSlides = [...presentation.slides];
+    newSlides[currentSlideIndex].elements = editingElement
+      ? newSlides[currentSlideIndex].elements.map(el => el.id === editingElement.id ? newElement : el)
+      : [...newSlides[currentSlideIndex].elements, newElement];
+
+    setPresentation(prev => ({ ...prev, slides: newSlides }));
+    closeModal(false);
     setEditingElement(null);
   };
 
-  const handleSaveImage = (data) => {
-    const newSlides = [...slides];
-    if (editingElement) {
-      newSlides[currentSlideIndex].elements = newSlides[currentSlideIndex].elements.map(el =>
-        el.id === editingElement.id ? { ...el, ...data } : el
-      );
-    } else {
-      const newElement = { id: Date.now(), type: 'image', ...data };
-      newSlides[currentSlideIndex].elements.push(newElement);
-    }
-    setSlides(newSlides);
-    setIsImageModalOpen(false);
-    setEditingElement(null);
-  };
-
-  const handleSaveVideo = (data) => {
-    const newSlides = [...slides];
-    if (editingElement) {
-      newSlides[currentSlideIndex].elements = newSlides[currentSlideIndex].elements.map(el =>
-        el.id === editingElement.id ? { ...el, ...data } : el
-      );
-    } else {
-      const newElement = { id: Date.now(), type: 'video', ...data };
-      newSlides[currentSlideIndex].elements.push(newElement);
-    }
-    setSlides(newSlides);
-    setIsVideoModalOpen(false);
-    setEditingElement(null);
-  };
-
-  const handleSaveCode = (data) => {
-    const newSlides = [...slides];
-    const newElement = editingElement ? 
-      { ...editingElement, ...data } : 
-      { id: Date.now(), type: 'code', ...data };
-    newSlides[currentSlideIndex].elements = editingElement ? 
-      newSlides[currentSlideIndex].elements.map(el => el.id === editingElement.id ? newElement : el) :
-      [...newSlides[currentSlideIndex].elements, newElement];
-    setSlides(newSlides);
-    setIsCodeModalOpen(false);
-    setEditingElement(null);
-  };
-
+  if (!presentation) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="slide-editor">
@@ -136,27 +156,32 @@ const SlideEditor = () => {
         >
           Prev
         </button>
-        <span>Slide {currentSlideIndex + 1} of {slides.length}</span>
+        <span>Slide {currentSlideIndex + 1} of {presentation.slides.length}</span>
         <button
           onClick={() => setCurrentSlideIndex(currentSlideIndex + 1)}
-          disabled={currentSlideIndex === slides.length - 1}
+          disabled={currentSlideIndex === presentation.slides.length - 1}
         >
           Next
         </button>
       </div>
+      
+      <button onClick={savePresentation} className="save-button">
+        Save Changes
+      </button>
+      
       <Slide
-        elements={slides[currentSlideIndex].elements}
+        elements={presentation.slides[currentSlideIndex]?.elements || []}
         setElements={(updatedElements) => {
-          const newSlides = [...slides];
+          const newSlides = [...presentation.slides];
           newSlides[currentSlideIndex].elements = updatedElements;
-          setSlides(newSlides);
+          setPresentation(prev => ({ ...prev, slides: newSlides }));
         }}
       />
 
       {isTextModalOpen && (
         <TextModal
           initialData={editingElement}
-          onSave={handleSaveText}
+          onSave={(data) => handleSaveElement(data, 'text', setIsTextModalOpen)}
           onClose={() => setIsTextModalOpen(false)}
         />
       )}
@@ -164,7 +189,7 @@ const SlideEditor = () => {
       {isImageModalOpen && (
         <ImageModal
           initialData={editingElement}
-          onSave={handleSaveImage}
+          onSave={(data) => handleSaveElement(data, 'image', setIsImageModalOpen)}
           onClose={() => setIsImageModalOpen(false)}
         />
       )}
@@ -172,7 +197,7 @@ const SlideEditor = () => {
       {isVideoModalOpen && (
         <VideoModal
           initialData={editingElement}
-          onSave={handleSaveVideo}
+          onSave={(data) => handleSaveElement(data, 'video', setIsVideoModalOpen)}
           onClose={() => setIsVideoModalOpen(false)}
         />
       )}
@@ -180,7 +205,7 @@ const SlideEditor = () => {
       {isCodeModalOpen && (
         <CodeModal
           initialData={editingElement}
-          onSave={handleSaveCode}
+          onSave={(data) => handleSaveElement(data, 'code', setIsCodeModalOpen)}
           onClose={() => setIsCodeModalOpen(false)}
         />
       )}

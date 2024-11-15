@@ -233,6 +233,7 @@ const SlideEditor = ({ presentationId }) => {
       <button onClick={handleNewSlide}>New Slide</button>
       <button onClick={handleDeleteSlide}>Delete Slide</button>
       <button onClick={openPreview}>Preview</button>
+      <button onClick={savePresentation}>Save Changes</button> {/* 新增的按钮 */}
       <div className="slide-controls">
         <button
           onClick={() => setCurrentSlideIndex(currentSlideIndex - 1)}
@@ -248,7 +249,7 @@ const SlideEditor = ({ presentationId }) => {
           Next
         </button>
       </div>
-
+  
       <Slide
         elements={presentation.slides[currentSlideIndex]?.elements || []}
         setElements={(updatedElements) => {
@@ -257,7 +258,7 @@ const SlideEditor = ({ presentationId }) => {
           setPresentation((prev) => ({ ...prev, slides: newSlides }));
         }}
       />
-
+  
       {isTextModalOpen && (
         <TextModal
           initialData={editingElement}
@@ -265,7 +266,7 @@ const SlideEditor = ({ presentationId }) => {
           onClose={() => setIsTextModalOpen(false)}
         />
       )}
-
+  
       {isImageModalOpen && (
         <ImageModal
           initialData={editingElement}
@@ -273,7 +274,7 @@ const SlideEditor = ({ presentationId }) => {
           onClose={() => setIsImageModalOpen(false)}
         />
       )}
-
+  
       {isVideoModalOpen && (
         <VideoModal
           initialData={editingElement}
@@ -281,7 +282,7 @@ const SlideEditor = ({ presentationId }) => {
           onClose={() => setIsVideoModalOpen(false)}
         />
       )}
-
+  
       {isCodeModalOpen && (
         <CodeModal
           initialData={editingElement}
@@ -289,7 +290,7 @@ const SlideEditor = ({ presentationId }) => {
           onClose={() => setIsCodeModalOpen(false)}
         />
       )}
-
+  
       {isBackgroundModalOpen && (
         <BackgroundModal
           currentBackground={presentation.background || {}}
@@ -302,7 +303,7 @@ const SlideEditor = ({ presentationId }) => {
         />
       )}
     </div>
-  );
+  );  
 };
 
 export default SlideEditor;

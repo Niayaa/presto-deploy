@@ -6,6 +6,7 @@ import Login from './pages/login';
 import Register from './pages/register';
 import Navbar from '../component/navbar';
 import Dashboard from './pages/presentation/dashboard';
+import SlideEditor from './pages/presentation/slideEditor';
 import EditorPage from './pages/presentation/editorpage';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '../component/authcontext';
@@ -25,6 +26,7 @@ function App() {
             <Route path="/register" element={<Register />}/>
             <Route path="/dashboard" element={<Dashboard />}/>
             <Route path="/editor/:presentationId" element={<EditorPage />} />
+            <Route path="/editor/:presentationId/slides/:slideNumber" element={<SlideEditor />} />
           </Routes>
         </Router>
       </PresentationProvider>

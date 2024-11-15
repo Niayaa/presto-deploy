@@ -97,6 +97,35 @@ const SlideEditor = ({ presentationId }) => {
     }
   };
 
+  const handleSaveElement = (data, type, closeModal) => {
+    if (currentSlideIndex < 0 || currentSlideIndex >= presentation.slides.length) {
+      console.error('Invalid slide index');
+      return;
+    }
+
+    const newElement = {
+      id: Date.now(), // Unique ID for the element
+      type,
+      ...data, // Include the provided data (e.g., text, image URL)
+    };
+
+    const updatedSlides = [...presentation.slides];
+
+    // Ensure the elements array exists
+    if (!updatedSlides[currentSlideIndex].elements) {
+      updatedSlides[currentSlideIndex].elements = [];
+    }
+
+    updatedSlides[currentSlideIndex].elements.push(newElement);
+
+    setPresentation((prev) => ({
+      ...prev,
+      slides: updatedSlides,
+    }));
+
+    closeModal();
+  };
+
   const openPreview = () => {
     const previewWindow = window.open('', '_blank');
     const previewContent = `
@@ -232,7 +261,7 @@ const SlideEditor = ({ presentationId }) => {
       {isTextModalOpen && (
         <TextModal
           initialData={editingElement}
-          onSave={(data) => handleSaveElement(data, 'text', setIsTextModalOpen)}
+          onSave={(data) => handleSaveElement(data, 'text', () => setIsTextModalOpen(false))}
           onClose={() => setIsTextModalOpen(false)}
         />
       )}
@@ -240,7 +269,7 @@ const SlideEditor = ({ presentationId }) => {
       {isImageModalOpen && (
         <ImageModal
           initialData={editingElement}
-          onSave={(data) => handleSaveElement(data, 'image', setIsImageModalOpen)}
+          onSave={(data) => handleSaveElement(data, 'image', () => setIsImageModalOpen(false))}
           onClose={() => setIsImageModalOpen(false)}
         />
       )}
@@ -248,7 +277,7 @@ const SlideEditor = ({ presentationId }) => {
       {isVideoModalOpen && (
         <VideoModal
           initialData={editingElement}
-          onSave={(data) => handleSaveElement(data, 'video', setIsVideoModalOpen)}
+          onSave={(data) => handleSaveElement(data, 'video', () => setIsVideoModalOpen(false))}
           onClose={() => setIsVideoModalOpen(false)}
         />
       )}
@@ -256,7 +285,7 @@ const SlideEditor = ({ presentationId }) => {
       {isCodeModalOpen && (
         <CodeModal
           initialData={editingElement}
-          onSave={(data) => handleSaveElement(data, 'code', setIsCodeModalOpen)}
+          onSave={(data) => handleSaveElement(data, 'code', () => setIsCodeModalOpen(false))}
           onClose={() => setIsCodeModalOpen(false)}
         />
       )}

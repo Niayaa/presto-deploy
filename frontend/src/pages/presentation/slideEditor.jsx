@@ -6,7 +6,6 @@ import TextModal from '../slides/textModal';
 import ImageModal from '../slides/imageModal';
 import VideoModal from '../slides/videoModal';
 import CodeModal from '../slides/codeModal';
-import BackgroundModal from '../slides/BackgroundModal'; // Added
 
 const SlideEditor = ({ presentationId }) => {
   const [store, setStore] = useState({ presentations: [] });

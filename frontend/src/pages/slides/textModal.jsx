@@ -7,9 +7,10 @@ const TextModal = ({ onSave, onClose, initialData }) => {
   const [height, setHeight] = useState(initialData?.height || 10);
   const [fontSize, setFontSize] = useState(initialData?.fontSize || 1);
   const [color, setColor] = useState(initialData?.color || '#000000');
+  const [fontFamily, setFontFamily] = useState(initialData?.fontFamily || 'Arial');
 
   const handleSave = () => {
-    const data = { text, width, height, fontSize, color };
+    const data = { text, width, height, fontSize, color, fontFamily };
     onSave(data);
   };
 
@@ -29,6 +30,13 @@ const TextModal = ({ onSave, onClose, initialData }) => {
 
         <label>Font Size (em):</label>
         <input type="number" value={fontSize} onChange={(e) => setFontSize(parseFloat(e.target.value))} />
+
+        <label>Font Family:</label>
+        <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)}>
+          <option value="Arial">Arial</option>
+          <option value="Courier New">Courier New</option>
+          <option value="Times New Roman">Times New Roman</option>
+        </select>
 
         <label>Color:</label>
         <input type="color" value={color} onChange={(e) => setColor(e.target.value)} />

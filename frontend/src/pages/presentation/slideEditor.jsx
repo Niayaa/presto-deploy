@@ -6,6 +6,7 @@ import TextModal from '../slides/textModal';
 import ImageModal from '../slides/imageModal';
 import VideoModal from '../slides/videoModal';
 import CodeModal from '../slides/codeModal';
+import BackgroundModal from '../slides/BackgroundModal'; // Added
 
 const SlideEditor = ({ presentationId }) => {
   const [store, setStore] = useState({ presentations: [] });
@@ -15,7 +16,9 @@ const SlideEditor = ({ presentationId }) => {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isCodeModalOpen, setIsCodeModalOpen] = useState(false);
+  const [isBackgroundModalOpen, setIsBackgroundModalOpen] = useState(false);
   const [editingElement, setEditingElement] = useState(null);
+  const [background, setBackground] = useState({}); // Added for background
 
   useEffect(() => {
     const fetchStore = async () => {
@@ -32,15 +35,10 @@ const SlideEditor = ({ presentationId }) => {
         if (response.ok) {
           const data = await response.json();
           setStore(data.store);
-          console.log('found data', data.store.presentations);
-          const foundPresentation = data.store.presentations.find(p => {
-            console.log(`Checking ID: ${p.id} against ${presentationId}`);
-            return p.id === Number(presentationId); // Ensure both are numbers for comparison
-          });
+          const foundPresentation = data.store.presentations.find(p => p.id === Number(presentationId));
           if (foundPresentation) {
             setPresentation(foundPresentation);
-          } else {
-            console.warn(`Presentation with ID ${presentationId} not found.`);
+            setBackground(foundPresentation.background || {}); // Load background
           }
         } else {
           console.error('Failed to fetch store');
@@ -56,13 +54,10 @@ const SlideEditor = ({ presentationId }) => {
   const savePresentation = async () => {
     try {
       const token = localStorage.getItem('token');
-
-      // 创建一个新的 presentations 数组，只有指定的 presentation 被修改
       const updatedPresentations = store.presentations.map(p =>
-        p.id === Number(presentationId) ? presentation : p
+        p.id === Number(presentationId) ? { ...presentation, background } : p // Save background
       );
 
-      // 构造更新后的 store 对象，包含完整的 presentations 数组
       const updatedStore = { ...store, presentations: updatedPresentations };
 
       const response = await fetch(`http://localhost:5005/store`, {
@@ -71,15 +66,14 @@ const SlideEditor = ({ presentationId }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ store: updatedStore }) // 发送完整的 store 数据
+        body: JSON.stringify({ store: updatedStore })
       });
 
-      if (!response.ok) {
-        console.error('Failed to save presentation');
-      } else {
+      if (response.ok) {
         console.log('Presentation saved successfully');
-        // 更新本地状态以保持同步
         setStore(updatedStore);
+      } else {
+        console.error('Failed to save presentation');
       }
     } catch (error) {
       console.error('Error saving presentation:', error);
@@ -122,6 +116,8 @@ const SlideEditor = ({ presentationId }) => {
     setIsCodeModalOpen(true);
   };
 
+  const openBackgroundModal = () => setIsBackgroundModalOpen(true); // Added for background
+
   const handleSaveElement = (data, type, closeModal) => {
     const newElement = editingElement
       ? { ...editingElement, ...data }
@@ -151,6 +147,7 @@ const SlideEditor = ({ presentationId }) => {
       />
       <button onClick={handleNewSlide}>New Slide</button>
       <button onClick={handleDeleteSlide}>Delete Slide</button>
+      <button onClick={openBackgroundModal}>Edit Background</button> {/* Added */}
       <div className="slide-controls">
         <button
           onClick={() => setCurrentSlideIndex(currentSlideIndex - 1)}
@@ -178,7 +175,16 @@ const SlideEditor = ({ presentationId }) => {
           newSlides[currentSlideIndex].elements = updatedElements;
           setPresentation(prev => ({ ...prev, slides: newSlides }));
         }}
+        background={background} // Pass background
       />
+
+      {isBackgroundModalOpen && (
+        <BackgroundModal
+          currentBackground={background}
+          onSave={setBackground}
+          onClose={() => setIsBackgroundModalOpen(false)}
+        />
+      )}
 
       {isTextModalOpen && (
         <TextModal

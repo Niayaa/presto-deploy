@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../component/authcontext';
 import './register.css';
 
 function Register() {
@@ -9,6 +10,7 @@ function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,6 +36,7 @@ function Register() {
       const { token } = data;
 
       localStorage.setItem('token', token);
+      login(token);
 
       navigate('/dashboard');
     } catch (err) {
